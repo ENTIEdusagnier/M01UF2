@@ -7,10 +7,11 @@ echo "Server de EFPT"
 echo "(0) Listen"
 DATA=`nc -l -p $PORT -w 0`
 echo $DATA
+PATRON_IP="([0-9]{1,3}\.){3}[0-9]{1,3}"
 
 
 echo "(3) Test & Send"
-if [ "$DATA" != "EFPT 1.0" ];then
+if ! echo "$DATA" | grep -Eq "EFPT 1.0 $patron_ip";then
 	echo "Entrada incorrecta"
 	sleep 1
 	echo "KO Heather" | nc $CLIENT $PORT
