@@ -13,7 +13,7 @@ echo "$CLIENT"
 echo "(3) Test & Send"
 if [ "$DATA" != "EFPT 1.0 "$CLIENT"" ];then
 	echo "KO_HEATHER"
-	sleep 1
+	sleep 2
 	echo "KO_HEATHER" | nc "$CLIENT" $PORT
 	exit 1
 fi
@@ -36,7 +36,7 @@ if [ "$DATA1" != "BOOOM" ];then
     exit 2
 fi
 
-echo "KO_HEATHER"
+echo "OK_HEATHER"
 sleep 2
 echo "OK_HEATHER" | nc "$CLIENT" $PORT
 
@@ -47,11 +47,11 @@ echo $FILENAME
 
 echo "(12) Test & Store & Send"
 FILE_NAME=`echo "$FILENAME" | awk '{print $2}'`
-echo "$nombre_archivo"
+echo "$FILE_NAME"
 
-if [ "$FILENAME" != "FILE_NAME $FILE_NAME" ]
+if [ "$FILENAME" != "FILE_NAME $FILE_NAME" ];then
 	echo "Entrada incorrecta"
-    sleep 1
+    sleep 2
     echo "KO_FILE_NAME" | nc "$CLIENT" $PORT
     exit 3
 fi
@@ -60,5 +60,10 @@ echo "Entrada correcta"
 sleep 2
 echo "OK_FILE_NAME" | nc "$CLIENT" $PORT
 
+echo "(13) Listen"
+FILE=`nc -l -p $PORT -w 0`
+echo $FILE
 
+echo "(14) Store & Send"
+echo "$FILE" >> /home/enti/M01UF2/EFPT/inbox/output_$CLIENT.txt
 
