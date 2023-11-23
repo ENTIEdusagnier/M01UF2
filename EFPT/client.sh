@@ -50,13 +50,29 @@ if [ "$FILENAME_CHECK" != "OK_FILE_NAME" ];then
 	echo "KO_FILE_NAME" | nc $SERVER $PORT
 	exit 3
 fi 
-echo "OK_FILE_NAME"
 
-echo "(14) Send file"
-CONV_FILE=`img2txt /home/enti/M01UF2/EFPT/img/fary1.jpg >> /home/enti/M01UF2/EFPT/img/img.txt`
+echo "(14) Send file & Hash"
+CONV_FILE=`img2txt /home/enti/M01UF2/EFPT/img/fary1.jpg > /home/enti/M01UF2/EFPT/img/img.txt`
 SEND_FILE=`cat /home/enti/M01UF2/EFPT/img/img.txt | nc $SERVER $PORT`
 
+CREATE_HASH=`md5sum /home/enti/M01UF2/EFPT/img/img.txt | awk '{print $1}'`
+echo $CREATE_HASH
+sleep 2
+SEND_HASH=`echo "$CREATE_HASH" | nc "$SERVER" "$PORT"`
 
 echo "(15) Listen"
 FILE_OK=`nc -l -p $PORT -w 0`
-echo $FILE_OK
+echo "$FILE_OK"
+
+if [ "$FILE_OK" == "REQUEST_FILE" ];then
+	while [ "$FILE_OK" != "OK_DATA" ]
+	do
+		SEND_FILE=`cat /home/enti/M01UF2/EFPT/img/img.txt | nc $SERVER $PORT`
+		FILE_OK=`nc -l -p $PORT -w 0`
+		echo "$FILE_OK"
+	done
+elif [ "$FILE_OK" == "OK_DATA" ];then
+	exit 0
+else
+	echo "KO_DATA"
+fi

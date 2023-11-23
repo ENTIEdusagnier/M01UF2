@@ -11,9 +11,9 @@ CLIENT=`echo "$DATA" | grep -Eo "$PATRON_IP"`
 echo "$CLIENT" 
 
 echo "(3) Test & Send"
-if [ "$DATA" != "EFPT 1.0 "$CLIENT"" ];then
+if [ "$DATA" != "EFPT 1.0 $CLIENT" ];then
 	echo "KO_HEATHER"
-	sleep 2
+	sleep 3
 	echo "KO_HEATHER" | nc "$CLIENT" $PORT
 	exit 1
 fi
@@ -50,20 +50,35 @@ FILE_NAME=`echo "$FILENAME" | awk '{print $2}'`
 echo "$FILE_NAME"
 
 if [ "$FILENAME" != "FILE_NAME $FILE_NAME" ];then
-	echo "Entrada incorrecta"
+	echo "KO_FILE_NAME"
     sleep 2
     echo "KO_FILE_NAME" | nc "$CLIENT" $PORT
     exit 3
 fi
 
-echo "Entrada correcta"
+echo "OK_FILE_NAME"
 sleep 2
 echo "OK_FILE_NAME" | nc "$CLIENT" $PORT
 
-echo "(13) Listen"
+echo "(13) Listen File & Listen Hash"
 FILE=`nc -l -p $PORT -w 0`
 echo $FILE
 
-echo "(14) Store & Send"
-echo "$FILE" >> /home/enti/M01UF2/EFPT/inbox/output_$CLIENT.txt
+HASH=`nc -l -p $PORT -w 0`
+echo $HASH
 
+echo "(16) Store & Send"
+echo "$FILE" > /home/enti/M01UF2/EFPT/inbox/output_$CLIENT.txt
+CREATE_HASH=`md5sum /home/enti/M01UF2/EFPT/inbox/output_$CLIENT.txt | awk '{print $1}'`
+
+while [ "$CREATE_HASH" != "$HASH" ]
+do
+	echo "REQUEST_FILE" | nc $CLIENT $PORT
+	FILE=`nc -l -p $PORT -w 0`
+	echo $FILE
+	echo "$FILE" > /home/enti/M01UF2/EFPT/inbox/output_$CLIENT.txt
+	CREATE_HASH=`md5sum /home/enti/M01UF2/EFPT/inbox/output_$CLIENT.txt | awk '{print $1}'`
+done
+
+echo "OK_DATA" | nc $CLIENT $PORT
+echo "OK_DATA FILE RECIVED PERFECTLY"
