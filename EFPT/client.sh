@@ -55,6 +55,7 @@ fi
 echo "(14) Send file & Hash"
 CONV_FILE=`img2txt /home/enti/M01UF2/EFPT/img/fary1.jpg > /home/enti/M01UF2/EFPT/img/img.txt`
 SEND_FILE=`cat /home/enti/M01UF2/EFPT/img/img.txt | nc $SERVER $PORT`
+echo "File Sent"
 
 CREATE_HASH=`md5sum /home/enti/M01UF2/EFPT/img/img.txt | awk '{print $1}'`
 echo $CREATE_HASH
