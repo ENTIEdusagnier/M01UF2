@@ -1,10 +1,11 @@
 #!/bin/bash
 
 PORT=3333
+TIMEOUT=1
 
 echo "Server de EFPT"
 echo "(0) Listen"
-DATA=`nc -l -p $PORT -w 0`
+DATA=`nc -l -p $PORT -w $TIMEOUT`
 echo $DATA
 PATRON_IP='([0-9]*\.){3}[0-9]*'
 CLIENT=`echo "$DATA" | grep -Eo "$PATRON_IP"`
@@ -24,7 +25,7 @@ echo "OK_HEATHER" | nc "$CLIENT" $PORT
 
 
 echo "(4) Listen"
-DATA1=`nc -l -p $PORT -w 0`
+DATA1=`nc -l -p $PORT -w $TIMEOUT`
 echo $DATA1
 
 
@@ -42,7 +43,7 @@ echo "OK_HEATHER" | nc "$CLIENT" $PORT
 
 
 echo "(8) Listen"
-FILENAME=`nc -l -p $PORT -w 0`
+FILENAME=`nc -l -p $PORT -w $TIMEOUT`
 echo $FILENAME
 
 echo "(12) Test & Store & Send"
@@ -61,10 +62,10 @@ sleep 2
 echo "OK_FILE_NAME" | nc "$CLIENT" $PORT
 
 echo "(13) Listen File & Listen Hash"
-FILE=`nc -l -p $PORT -w 0`
+FILE=`nc -l -p $PORT -w $TIMEOUT`
 echo $FILE
 
-HASH=`nc -l -p $PORT -w 0`
+HASH=`nc -l -p $PORT -w $TIMEOUT`
 echo $HASH
 
 echo "(16) Store & Send"
@@ -74,7 +75,7 @@ CREATE_HASH=`md5sum /home/enti/M01UF2/EFPT/inbox/output_$CLIENT.txt | awk '{prin
 while [ "$CREATE_HASH" != "$HASH" ]
 do
 	echo "REQUEST_FILE" | nc $CLIENT $PORT
-	FILE=`nc -l -p $PORT -w 0`
+	FILE=`nc -l -p $PORT -w $TIMEOUT`
 	echo $FILE
 	echo "$FILE" > /home/enti/M01UF2/EFPT/inbox/output_$CLIENT.txt
 	CREATE_HASH=`md5sum /home/enti/M01UF2/EFPT/inbox/output_$CLIENT.txt | awk '{print $1}'`

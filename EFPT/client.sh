@@ -3,6 +3,7 @@
 SERVER="localhost"
 PORT=3333
 MYIP=`ip address | grep -Eo 'inet ([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'`
+TIMEOUT=1
 
 echo "Cliente de EFPT"
 echo "(1) Send"
@@ -10,7 +11,7 @@ echo "EFPT 1.0 $MYIP" | nc $SERVER $PORT
 
 
 echo "(2) Listen"
-DATA=`nc -l -p $PORT -w 0`
+DATA=`nc -l -p $PORT -w $TIMEOUT`
 
 echo "(5) Test & Send"
 if [ "$DATA" != "OK_HEATHER" ];then
@@ -22,7 +23,7 @@ echo "BOOOM" | nc $SERVER $PORT
 
 
 echo "(6) Listen"
-DATA1=`nc -l -p $PORT -w 0`
+DATA1=`nc -l -p $PORT -w $TIMEOUT`
 echo $DATA1
 
 echo "(9) Test HandShake"
@@ -40,7 +41,7 @@ echo "(10) Send file"
 echo "FILE_NAME fary1.txt" | nc $SERVER $PORT
 
 echo "(11) Listen"
-FILENAME_CHECK=`nc -l -p $PORT -w 0`
+FILENAME_CHECK=`nc -l -p $PORT -w $TIMEOUT`
 echo $FILENAME_CHECK
 
 echo "(11.5) Check"
@@ -61,14 +62,14 @@ sleep 2
 SEND_HASH=`echo "$CREATE_HASH" | nc "$SERVER" "$PORT"`
 
 echo "(15) Listen"
-FILE_OK=`nc -l -p $PORT -w 0`
+FILE_OK=`nc -l -p $PORT -w $TIMEOUT`
 echo "$FILE_OK"
 
 if [ "$FILE_OK" == "REQUEST_FILE" ];then
 	while [ "$FILE_OK" != "OK_DATA" ]
 	do
 		SEND_FILE=`cat /home/enti/M01UF2/EFPT/img/img.txt | nc $SERVER $PORT`
-		FILE_OK=`nc -l -p $PORT -w 0`
+		FILE_OK=`nc -l -p $PORT -w $TIMEOUT`
 		echo "$FILE_OK"
 	done
 elif [ "$FILE_OK" == "OK_DATA" ];then
