@@ -34,11 +34,12 @@ if [ "$DATA1" != "OK_HEATHER" ];then
 	exit 2
 fi
 
-echo "OK_HEATHER (Handshake)"
 
 sleep 2
 echo "(10) Send file"
-echo "FILE_NAME fary1.txt" | nc $SERVER $PORT
+FILENAME="fary1.txt"
+HASH_FILENAME=`echo "$FILENAME" | md5sum | awk '{print $1}'`
+echo "FILE_NAME $FILENAME $HASH_FILENAME" | nc $SERVER $PORT
 
 echo "(11) Listen"
 FILENAME_CHECK=`nc -l -p $PORT -w $TIMEOUT`
@@ -46,30 +47,42 @@ echo $FILENAME_CHECK
 
 echo "(11.5) Check"
 if [ "$FILENAME_CHECK" != "OK_FILE_NAME" ];then
-	echo "KO_FILE_NAME"
-	sleep 2
 	echo "KO_FILE_NAME" | nc $SERVER $PORT
 	exit 3
-fi 
+fi
 
-echo "(14) Send file & Hash"
+echo "(14) Send file"
 CONV_FILE=`img2txt /home/enti/M01UF2/EFPT/img/fary1.jpg > /home/enti/M01UF2/EFPT/img/img.txt`
 SEND_FILE=`cat /home/enti/M01UF2/EFPT/img/img.txt | nc $SERVER $PORT`
 echo "File Sent"
 
+echo "(15) Listen"
+FILE_OK=`nc -l -p $PORT -w $TIMEOUT`
+echo "$FILE_OK"
+
+if [ "$FILE_OK" != "OK_DATA" ]; then
+	echo "KO DATA"
+	exit 4
+fi
+
+echo "(18) Send Hash"
 CREATE_HASH=`md5sum /home/enti/M01UF2/EFPT/img/img.txt | awk '{print $1}'`
 echo $CREATE_HASH
 sleep 2
 SEND_HASH=`echo "$CREATE_HASH" | nc "$SERVER" "$PORT"`
 
-echo "(15) Listen"
+
+echo "(18) Check and re-send Hash"
 FILE_OK=`nc -l -p $PORT -w $TIMEOUT`
 echo "$FILE_OK"
 
 if [ "$FILE_OK" == "REQUEST_FILE" ];then
 	while [ "$FILE_OK" != "OK_DATA" ]
 	do
+		sleep 1
 		SEND_FILE=`cat /home/enti/M01UF2/EFPT/img/img.txt | nc $SERVER $PORT`
+		sleep 2
+		SEND_HASH=`echo "$CREATE_HASH" | nc "$SERVER" "$PORT"`
 		FILE_OK=`nc -l -p $PORT -w $TIMEOUT`
 		echo "$FILE_OK"
 	done
