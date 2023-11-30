@@ -97,14 +97,21 @@ echo $HASH
 echo "(18) Test & Send (Hash)"
 CREATE_HASH=`md5sum /home/enti/M01UF2/EFPT/inbox/"$CLIENT"_"$NAME_FILE"| awk '{print $1}'`
 
-while [ "$CREATE_HASH" != "$HASH" ]
-do
-	echo "REQUEST_FILE" | nc $CLIENT $PORT
-	nc -l -p $PORT -w $TIMEOUT > /home/enti/M01UF2/EFPT/inbox/"$CLIENT"_"$NAME_FILE"
-	HASH=`nc -l -p $PORT -w $TIMEOUT`
-	echo $HASH
-	CREATE_HASH=`md5sum /home/enti/M01UF2/EFPT/inbox/"$CLIENT"_"$NAME_FILE" | awk '{print $1}'`
-done
+#Request file util its correct
+#while [ "$CREATE_HASH" != "$HASH" ]
+#do
+	#echo "REQUEST_FILE" | nc $CLIENT $PORT
+	#nc -l -p $PORT -w $TIMEOUT > /home/enti/M01UF2/EFPT/inbox/"$CLIENT"_"$NAME_FILE"
+	#HASH=`nc -l -p $PORT -w $TIMEOUT`
+	#echo $HASH
+	#CREATE_HASH=`md5sum /home/enti/M01UF2/EFPT/inbox/"$CLIENT"_"$NAME_FILE" | awk '{print $1}'`
+#done
+
+if [ "$HASH" != "$CREATE_HASH"  ];then
+	echo "MD5 it's not equal"
+	echo "KO_DATA" | nc $CLIENT $PORT
+	exit 5
+fi
 
 echo "OK_DATA" | nc $CLIENT $PORT
 echo "OK_DATA FILE RECIVED PERFECTLY"

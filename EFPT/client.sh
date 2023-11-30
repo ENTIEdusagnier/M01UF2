@@ -72,22 +72,24 @@ sleep 2
 SEND_HASH=`echo "$CREATE_HASH" | nc "$SERVER" "$PORT"`
 
 
-echo "(18) Check and re-send Hash"
+echo "(19) Listen & Check"
 FILE_OK=`nc -l -p $PORT -w $TIMEOUT`
 echo "$FILE_OK"
 
-if [ "$FILE_OK" == "REQUEST_FILE" ];then
-	while [ "$FILE_OK" != "OK_DATA" ]
-	do
-		sleep 1
-		SEND_FILE=`cat /home/enti/M01UF2/EFPT/img/img.txt | nc $SERVER $PORT`
-		sleep 2
-		SEND_HASH=`echo "$CREATE_HASH" | nc "$SERVER" "$PORT"`
-		FILE_OK=`nc -l -p $PORT -w $TIMEOUT`
-		echo "$FILE_OK"
-	done
-elif [ "$FILE_OK" == "OK_DATA" ];then
-	exit 0
-else
-	echo "KO_DATA"
+if [ "$FILE_OK" != "OK_DATA" ];then
+	#To resend file until is OK
+	#while [ "$FILE_OK" != "OK_DATA" ]
+	#do
+		#sleep 1
+		#SEND_FILE=`cat /home/enti/M01UF2/EFPT/img/img.txt | nc $SERVER $PORT`
+		#sleep 2
+		#SEND_HASH=`echo "$CREATE_HASH" | nc "$SERVER" "$PORT"`
+		#FILE_OK=`nc -l -p $PORT -w $TIMEOUT`
+		#echo "$FILE_OK"
+	#done
+#elif [ "$FILE_OK" == "OK_DATA" ];then
+	#exit 0
+	exit 5
 fi
+
+echo "Succesful"
