@@ -131,4 +131,31 @@ fi
 
 echo "OK_FILE_MD5" | nc $CLIENT $PORT
 echo "To $CLIENT OK_FILE_MD5 RECIVED PERFECTLY"
+
+echo "(Listen file number)"
+FILENUM=`nc -l -p $PORT -w $TIMEOUT`
+echo "File num is: $FILENUM"
+
+for ((i = 1; 1 <= "$FILENUM"; i++));do
+	FILECLIENT=`nc -l -p $PORT -w $TIMEOUT`
+	FILENAME=`echo "$FILEHASH" | awk '{print $1}'`
+	echo "Name of the file: $FILENAME"
+	if [ -z $FILENAME ];then
+		echo "KO_FILE" | nc $CLIENT $PORT
+		echo "KO_FILE_NAME_EMPTY"
+		exit 7
+	fi
+	HASHFILE=`echo "$FILENAME" | awk '{print $2}'`
+	echo "Hash from the file: $HASHFILE"
+	HASHCHECK=`echo "$FILENAME" | md5sum`
+	if [ "$HASHFILE" != "$HASHCHECK" ];then
+		echo "KO_FILE" | nc $CLIENT $PORT
+		echo "KO_FILE_HASH"
+		exit 7
+	fi
+	echo "OK_FILE" | nc $CLIENT $PORT
+	echo "Files Success"
+done
+
+
 exit 0
