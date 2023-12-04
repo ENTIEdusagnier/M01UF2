@@ -1,6 +1,12 @@
 #!/bin/bash
 
-SERVER="10.65.0.57"
+if [ $# == 0 ];then #Nos permite saber cuantos parametros hay 
+	SERVER="localhost"
+
+elif [ $# == 1 ];then 
+	SERVER=$1
+fi
+
 PORT=3333
 MYIP=`ip address | grep -Eo 'inet ([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'`
 TIMEOUT=1
@@ -15,7 +21,6 @@ DATA=`nc -l -p $PORT -w $TIMEOUT`
 
 echo "(5) Test & Send"
 if [ "$DATA" != "OK_HEADER" ];then
-	echo "KO_HEADER" | nc $SERVER $PORT
 	exit 1
 fi
 sleep 2
@@ -27,10 +32,8 @@ DATA1=`nc -l -p $PORT -w $TIMEOUT`
 #echo $DATA1
 
 echo "(9) Test HandShake"
-if [ "$DATA1" != "OK_HEADER" ];then
-	#echo "KO_HEATHER"
-	sleep 2
-	echo "KO_HEADER" | nc $SERVER $PORT
+if [ "$DATA1" != "OK_HANDSHAKE" ];then
+	echo "KO_HANDSHAKE"
 	exit 2
 fi
 

@@ -35,15 +35,15 @@ echo $DATA1
 
 echo "(7) Test & Send"
 if [ "$DATA1" != "BOOOM" ];then
-	echo "To $CLIENT KO_HEADER"
+	echo "To $CLIENT KO_HANDSHAKE"
 	sleep 1
-    echo "KO_HEADER" | nc "$CLIENT" $PORT
+    echo "KO_HANDSHAKE" | nc "$CLIENT" $PORT
     exit 2
 fi
 
-echo "To $CLIENT OK_HEADER"
+echo "To $CLIENT OK_HANDSHAKE"
 sleep 2
-echo "OK_HEADER" | nc "$CLIENT" $PORT
+echo "OK_HANDSHAKE" | nc "$CLIENT" $PORT
 
 
 echo "(8) Listen"
