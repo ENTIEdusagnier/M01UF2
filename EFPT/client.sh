@@ -97,8 +97,6 @@ if [ "$FILE_OK" != "OK_FILE_MD5" ];then
 	exit 5
 fi
 
-echo "Succesful"
-
 
 echo "Send amount of files"
 
@@ -108,14 +106,25 @@ for file in `ls /home/enti/M01UF2/EFPT/send`;do
 done
 SENDNUM=`echo $CONTADOR | nc "$SERVER" "$PORT"`
 
-sleep 2
+echo "Listen & Check"
+NUMOK=`nc -l -p "$PORT" -w "$TIMEOUT"`
+if [ $NUMOK != "OK_NUM" ];then
+	echo "KO_NUM"
+	exit 6
+fi
+echo "OK_NUM"
+
+
+echo "SEND FILES"
+sleep 5 
 for files in `ls /home/enti/M01UF2/EFPT/send`;do
 	HASHNAME=`echo "$files" | md5sum | awk '{print $1}'`
 	echo "$files $HASHNAME"
-	sleep 1
+	sleep 2
 	echo "$files $HASHNAME" | nc "$SERVER" "$PORT"
 	FILEOK=`nc -l -p $PORT -w $TIMEOUT`
-	if [ FILEOK != "OK_FILE" ];then
+	if [ $FILEOK != "OK_FILE" ];then
+		echo "KO_FILE"
 		exit 6
 	fi
 	echo "FILE_OK"

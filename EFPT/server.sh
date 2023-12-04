@@ -136,9 +136,18 @@ echo "(Listen file number)"
 FILENUM=`nc -l -p $PORT -w $TIMEOUT`
 echo "File num is: $FILENUM"
 
-for ((i = 1; 1 <= "$FILENUM"; i++));do
+if [ -z "$FILENUM" ]; then
+	sleep 2
+	echo "KO_NUM" | nc $CLIENT $PORT
+	echo "KO_NUM CLIENT"
+fi
+sleep 2
+echo "OK_NUM" | nc $CLIENT $PORT
+echo "OK_NUM_OF_FILES"
+
+for files in $(seq 1 $FILENUM);do
 	FILECLIENT=`nc -l -p $PORT -w $TIMEOUT`
-	FILENAME=`echo "$FILEHASH" | awk '{print $1}'`
+	FILENAME=`echo "$FILECLIENT" | awk '{print $1}'`
 	echo "Name of the file: $FILENAME"
 	if [ -z $FILENAME ];then
 		echo "KO_FILE" | nc $CLIENT $PORT
@@ -155,6 +164,7 @@ for ((i = 1; 1 <= "$FILENUM"; i++));do
 	fi
 	echo "OK_FILE" | nc $CLIENT $PORT
 	echo "Files Success"
+	((COUNTER++))
 done
 
 
