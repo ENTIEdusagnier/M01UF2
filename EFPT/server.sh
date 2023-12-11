@@ -46,93 +46,7 @@ sleep 2
 echo "OK_HANDSHAKE" | nc "$CLIENT" $PORT
 
 
-echo "" && echo "(8) Listen" && echo ""
-FILENAME=`nc -l -p $PORT -w $TIMEOUT`
-
-
-echo "" && echo "(12) Test & Store & Send" && echo ""
-FILE_NAME=`echo "$FILENAME" | awk '{print $1}'`
-if [ "$FILE_NAME" != "FILE_NAME" ]; then
-	echo "To $CLIENT KO_FILE_NAME PREFIX"
-    sleep 2
-    echo "KO_FILE_NAME" | nc "$CLIENT" $PORT
-    exit 3
-fi
-
-NAME_FILE=`echo "$FILENAME" | awk '{print $2}'`
-HASH_FILENAME=`echo "$FILENAME" | awk '{print $3}'`
-echo "Name of the File recived: $NAME_FILE"
-echo "Hash of the name recived: $HASH_FILENAME"
-CHECK_FILE_HASH=`echo "$NAME_FILE" | md5sum | awk '{print $1}'`
-
-if [ "$HASH_FILENAME" != "$CHECK_FILE_HASH" ];then
-	echo "To $CLIENT KO_FILE_NAME MD5"
-    sleep 2
-    echo "KO_FILE_NAME" | nc "$CLIENT" $PORT
-    exit 3
-fi
-
-echo "To $CLIENT OK_FILE_NAME"
-sleep 2
-echo "OK_FILE_NAME" | nc "$CLIENT" $PORT
-
-echo "" && echo "(13) Listen File" && echo ""
-nc -l -p $PORT -w $TIMEOUT > /home/enti/M01UF2/EFPT/inbox/"$CLIENT"_"$NAME_FILE"
-echo "File recived"
-
-
-echo "" && echo "(16) Store & Send" && echo ""
-FILE=`cat /home/enti/M01UF2/EFPT/inbox/"$CLIENT"_"$NAME_FILE"`
-
-if [ -z "$FILE" ];then
-	echo "To $CLIENT (EMPTY DATA) KO_DATA"
-	sleep 1
-	echo "KO_DATA" | nc $CLIENT $PORT
-	exit 4
-fi
-echo "To $CLIENT OK_DATA"
-echo "OK_DATA" | nc $CLIENT $PORT
-
-echo "(17) Listen Hash" && echo ""
-HASH=`nc -l -p $PORT -w $TIMEOUT`
-echo "Hash from $CLIENT 's file $HASH"
-
-
-echo "" && echo "(20) Test & Send (Hash)" && echo ""
-
-PREFIX=`echo "$HASH" | awk '{print $1}'`
-
-if [ $PREFIX != "FILE_MD5" ];then
-	echo "To $CLIENT ERROR Prefix FILE_MD5"
-	wait 1
-	echo "KO_DATA" | nc $CLIENT $PORT
-	exit 6
-fi
-
-HASH_FILE=`echo "$HASH" | awk '{print $2}'`
-CREATE_HASH=`md5sum /home/enti/M01UF2/EFPT/inbox/"$CLIENT"_"$NAME_FILE"| awk '{print $1}'`
-
-#Request file util its correct
-#while [ "$CREATE_HASH" != "$HASH" ]
-#do
-	#echo "REQUEST_FILE" | nc $CLIENT $PORT
-	#nc -l -p $PORT -w $TIMEOUT > /home/enti/M01UF2/EFPT/inbox/"$CLIENT"_"$NAME_FILE"
-	#HASH=`nc -l -p $PORT -w $TIMEOUT`
-	#echo $HASH
-	#CREATE_HASH=`md5sum /home/enti/M01UF2/EFPT/inbox/"$CLIENT"_"$NAME_FILE" | awk '{print $1}'`
-#done
-
-if [ "$HASH_FILE" != "$CREATE_HASH"  ];then
-	echo "To $CLIENT MD5 it's not equal"
-	wait 1
-	echo "KO_FILE_MD5" | nc $CLIENT $PORT
-	exit 6
-fi
-
-echo "OK_FILE_MD5" | nc $CLIENT $PORT
-echo "To $CLIENT OK_FILE_MD5 RECIVED PERFECTLY"
-
-echo "" && echo "(22)Listen & Check file Num" && echo ""
+echo "" && echo "(12)Listen & Check file Num" && echo ""
 FILENUM=`nc -l -p $PORT -w $TIMEOUT`
 echo "File num is: $FILENUM"
 
@@ -145,7 +59,7 @@ sleep 2
 echo "OK_NUM" | nc $CLIENT $PORT
 echo "OK_NUM_OF_FILES"
 
-echo "" && echo "(25) Listen & Check files sended" && echo ""
+echo "" && echo "(23) Listen & Check files sended" && echo ""
 for files in $(seq 1 $FILENUM);do
 
 	FILECLIENT=`nc -l -p $PORT -w $TIMEOUT`
