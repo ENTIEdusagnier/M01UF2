@@ -1,9 +1,9 @@
 #!/bin/bash
 
-if [ $# == 0 ];then #Nos permite saber cuantos parametros hay 
+if [ $# -eq 0 ];then #Nos permite saber cuantos parametros hay 
 	SERVER="localhost"
 
-elif [ $# == 1 ];then 
+elif [ $# -ge 1 ];then 
 	SERVER=$1
 fi
 
@@ -12,6 +12,12 @@ MYIP=`ip address | grep -Eo 'inet ([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}
 TIMEOUT=1
 
 echo "Cliente de EFPT"
+if [ $# -eq 2 ];then
+	echo "(-1)"
+	echo "RESET" | $SERVER $PORT
+	sleep 2
+fi
+
 echo "(1) Send"
 echo "EFTP 1.0 $MYIP" | nc $SERVER $PORT
 
@@ -45,13 +51,13 @@ CONTADOR=0
 for file in `ls /home/enti/M01UF2/EFPT/send`;do
 	((CONTADOR++))
 done
-SENDNUM=`echo $CONTADOR | nc "$SERVER" "$PORT"`
+SENDNUM=`echo "NUM_FILES $CONTADOR" | nc "$SERVER" "$PORT"`
 
 echo "(11) Listen & Check"
 
 NUMOK=`nc -l -p "$PORT" -w "$TIMEOUT"`
-if [ $NUMOK != "OK_NUM" ];then
-	echo "KO_NUM"
+if [ $NUMOK != "OK_FILES_NAME" ];then
+	echo "KO_NUM_FILES"
 	exit 6
 fi
 #echo "OK_NUM"
@@ -63,9 +69,9 @@ for files in `ls /home/enti/M01UF2/EFPT/send`;do
 	HASHNAME=`echo "$files" | md5sum | awk '{print $1}'`
 	#echo "$files $HASHNAME"
 	sleep 2
-	echo "FILE_MD5 $files $HASHNAME" | nc "$SERVER" "$PORT"
+	echo "FILE_NAME $files $HASHNAME" | nc "$SERVER" "$PORT"
 	FILEOK=`nc -l -p $PORT -w $TIMEOUT`
-	if [ $FILEOK != "OK_FILE" ];then
+	if [ $FILEOK != "OK_FILE_NAME" ];then
 		echo "KO_FILE"
 		exit 6
 	fi
@@ -76,18 +82,18 @@ for files in `ls /home/enti/M01UF2/EFPT/send`;do
 	
 	
 	FILESEND=`nc -l -p $PORT -w $TIMEOUT`
-	if [ "$FILESEND" != "OK_SEND_FILE" ];then
+	if [ "$FILESEND" != "OK_DATA" ];then
 		echo "File: $files not send correctly!"
 	else
 		echo "SEND OK $files"
 		HASHFILE=`md5sum /home/enti/M01UF2/EFPT/send/$files | awk '{print $1}'`
 		
 		sleep 2
-		echo "SEND_MD5 $HASHFILE" | nc $SERVER $PORT
+		echo "FILE_MD5 $HASHFILE" | nc $SERVER $PORT
 
 		MD5LISTEN=`nc -l -p $PORT -w $TIMEOUT`
-		if [ "$MD5LISTEN" != "OK_MD5"  ];then
-			echo "KO MD5 $files"
+		if [ "$MD5LISTEN" != "OK_FILE_MD5"  ];then
+			echo "KO_FILE_MD5 $files"
 		fi
 		#echo "OK_MD5 $files"
 	fi
