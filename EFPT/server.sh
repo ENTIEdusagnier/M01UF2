@@ -46,39 +46,50 @@ sleep 2
 echo "OK_HANDSHAKE" | nc "$CLIENT" $PORT
 
 
-echo "" && echo "(12)Listen & Check file Num" && echo ""
+echo "" && echo "(7a) Listen" && echo ""
 FILENUM=`nc -l -p $PORT -w $TIMEOUT`
 echo "File num is: $FILENUM"
+
+echo "" && echo "(7b) Test & Send" && echo ""
+PREFIX=`echo "$FILENUM" | awk '{print $1}'`
 
 if [ -z "$FILENUM" ]; then
 	sleep 2
 	echo "KO_NUM" | nc $CLIENT $PORT
 	echo "KO_NUM CLIENT"
 fi
-sleep 2
-echo "OK_NUM" | nc $CLIENT $PORT
-echo "OK_NUM_OF_FILES"
+if [ "$PREFIX" != "NUM_FILES" ];then
+	sleep 2
+	echo "KO_NUM" | nc $CLIENT $PORT
+	echo "KO_NUM CLIENT"
+fi
 
-echo "" && echo "(23) Listen & Check files sended" && echo ""
-for files in $(seq 1 $FILENUM);do
+sleep 2
+echo "OK_FILE_NUM" | nc $CLIENT $PORT
+echo "OK_NUM_OF_FILES"
+NUM=`echo "$FILENUM" | awk '{print $2}'`
+
+echo "" && echo "(8a) Listen & Check files sended" && echo ""
+for files in $(seq 1 $NUM);do
 
 	FILECLIENT=`nc -l -p $PORT -w $TIMEOUT`
 	echo "NAME & HASH $CLIENT: $FILECLIENT"
 
 	PREFIX=`echo "$FILECLIENT" | awk '{print $1}'`
-	if [ "$PREFIX" != "FILE_MD5" ];then
-		echo "KO_FILE" | nc $CLIENT $PORT
+
+	if [ "$PREFIX" != "FILE_NAME" ];then
+		echo "KO_FILE_NAME" | nc $CLIENT $PORT
 		echo "KO_FILE_WRONG_PREFIX"
-		exit 7
+		exit 3
 	fi
 
 	FILENAME=`echo "$FILECLIENT" | awk '{print $2}'`
 	#echo "Name of the file: $FILENAME"
 	
 	if [ -z $FILENAME ];then
-		echo "KO_FILE" | nc $CLIENT $PORT
+		echo "KO_FILE_NAME" | nc $CLIENT $PORT
 		echo "KO_FILE_NAME_EMPTY"
-		exit 7
+		exit 3
 	fi
 	HASHFILE=`echo "$FILECLIENT" | awk '{print $3}'`
 	# echo "Hash recived from file: $HASHFILE"
@@ -87,15 +98,20 @@ for files in $(seq 1 $FILENUM);do
 	echo "Local hash: $HASHCHECK"
 
 	if [ "$HASHFILE" != "$HASHCHECK" ];then
-		echo "KO_FILE" | nc $CLIENT $PORT
+		echo "KO_FILE_NAME" | nc $CLIENT $PORT
 		echo "KO_FILE_HASH"
-		exit 7
+		exit 3
 	fi
-	echo "OK_FILE" | nc $CLIENT $PORT
+	
+	echo "OK_FILE_NAME" | nc $CLIENT $PORT
+
 	echo "FileName $FILENAME Success"
 	
+	echo "" && echo "(13) Listen" && echo ""
 	nc -l -p $PORT -w $TIMEOUT > /home/enti/M01UF2/EFPT/inbox/"$CLIENT"_"$FILENAME"
 	
+	echo "" && echo "(16) Test & Store & Send" && echo ""
+
 	FILE=`cat /home/enti/M01UF2/EFPT/inbox/"$CLIENT"_"$FILENAME"`
 
 	if [ -z "$FILE" ];then
@@ -104,12 +120,15 @@ for files in $(seq 1 $FILENUM);do
 		echo "KO_SEND_FILE: $FILENAME EMPTY FROM: $CLIENT" >> /home/enti/M01UF2/EFPT/logs/files_send.log
 	else
 		sleep 1
-		echo "OK_SEND_FILE" | nc $CLIENT $PORT
+		echo "OK_DATA" | nc $CLIENT $PORT
+
+		echo "" && echo "(17) Listen MD5" && echo ""
 
 		RECIVEDHASH=`nc -l -p $PORT -w $TIMEOUT`
 		PREFIX=`echo "$RECIVEDHASH" | awk '{print $1}'`
 		echo "$RECIVEDHASH"
-		if [ "$PREFIX" != "SEND_MD5" ];then
+
+		if [ "$PREFIX" != "FILE_MD5" ];then
 			sleep 2
 			echo "KO_MD5" | nc $CLIENT $PORT
 			echo "KO_MD5_PREFIX: FILE $FILENAME FROM: $CLIENT" >> /home/enti/M01UF2/EFPT/logs/files_send.log
@@ -120,16 +139,15 @@ for files in $(seq 1 $FILENUM);do
 
 			if [ "$HASH" != "$HASHCREATED" ];then
 				sleep 2
-				echo "KO_MD5" | nc $CLIENT $PORT
-				echo "KO_MD5_MD5 DON'T MATCH: FILE $FILENAME FROM: $CLIENT" >> /home/enti/M01UF2/EFPT/logs/files_send.log
+				echo "KO_FILE_MD5" | nc $CLIENT $PORT
+				echo "KO_FILE_MD5 DON'T MATCH: FILE $FILENAME FROM: $CLIENT" >> /home/enti/M01UF2/EFPT/logs/files_send.log
 
 			else
 				sleep 2
-				echo OK_MD5	| nc $CLIENT $PORT
-				echo "OK_MD5 $FILENAME FROM $CLIENT"
+				echo OK_FILE_MD5 | nc $CLIENT $PORT
+				echo "OK_FILE_MD5 $FILENAME FROM $CLIENT"
 			fi
 		fi		
 	fi
-	((COUNTER++))
 done
 exit 0

@@ -45,7 +45,7 @@ fi
 
 
 sleep 2
-echo "(10) Send & Check NUM files"
+echo "(9a) Send & Check NUM files"
 
 CONTADOR=0
 for file in `ls /home/enti/M01UF2/EFPT/send`;do
@@ -53,35 +53,43 @@ for file in `ls /home/enti/M01UF2/EFPT/send`;do
 done
 SENDNUM=`echo "NUM_FILES $CONTADOR" | nc "$SERVER" "$PORT"`
 
-echo "(11) Listen & Check"
+echo "(9b) Listen & Check"
 
 NUMOK=`nc -l -p "$PORT" -w "$TIMEOUT"`
-if [ $NUMOK != "OK_FILES_NAME" ];then
+if [ $NUMOK != "OK_FILE_NUM" ];then
 	echo "KO_NUM_FILES"
-	exit 6
+	exit 3
 fi
 #echo "OK_NUM"
 
 
-echo "(14) Send Files"
+echo "(10a) Send Files"
 sleep 1 
 for files in `ls /home/enti/M01UF2/EFPT/send`;do
 	HASHNAME=`echo "$files" | md5sum | awk '{print $1}'`
 	#echo "$files $HASHNAME"
 	sleep 2
 	echo "FILE_NAME $files $HASHNAME" | nc "$SERVER" "$PORT"
+
+	echo "(11a) Listen"
 	FILEOK=`nc -l -p $PORT -w $TIMEOUT`
+
+	echo "(14) Test & Send"
 	if [ $FILEOK != "OK_FILE_NAME" ];then
 		echo "KO_FILE"
-		exit 6
+		exit 4
 	fi
 	#echo "FILE_"$files"_ OK"
-	
 	sleep 2
-	SEND=`cat /home/enti/M01UF2/EFPT/send/$files | nc $SERVER $PORT` 
 	
+	SEND=`cat /home/enti/M01UF2/EFPT/send/$files | nc $SERVER $PORT`
 	
+	echo "(15) Listen"
 	FILESEND=`nc -l -p $PORT -w $TIMEOUT`
+
+
+	echo "(18) Test & Send"
+
 	if [ "$FILESEND" != "OK_DATA" ];then
 		echo "File: $files not send correctly!"
 	else
@@ -90,12 +98,16 @@ for files in `ls /home/enti/M01UF2/EFPT/send`;do
 		
 		sleep 2
 		echo "FILE_MD5 $HASHFILE" | nc $SERVER $PORT
-
+		
+		echo "(19) Listen"
 		MD5LISTEN=`nc -l -p $PORT -w $TIMEOUT`
+
+		echo "(21) Test"
 		if [ "$MD5LISTEN" != "OK_FILE_MD5"  ];then
 			echo "KO_FILE_MD5 $files"
 		fi
 		#echo "OK_MD5 $files"
 	fi
 done
+echo "FIN"
 exit 0
