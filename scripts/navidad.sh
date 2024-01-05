@@ -27,21 +27,22 @@ if [ -f "$NOMBRE_SIMPLE.mp3" ]; then
 #    echo "El archivo mp3 ya existe" #DEBUG
 	ffplay -autoexit $NOMBRE_SIMPLE.mp3	> /dev/null 2>&1 & #Para segundo plano
 	
-    cp "$NOMBRE" "$NOMBRE"_TEMP
-    sed -i '/^[[:space:]]*$/d' "$NOMBRE"_TEMP #Saco las lineas sin espacios del archivo copiado
+    cp "$NOMBRE" "$NOMBRE_SIMPLE"_TEMP.txt
+    sed -i '/^[[:space:]]*$/d' "$NOMBRE_SIMPLE"_TEMP.txt #Saco las lineas sin espacios del archivo copiado
 #   cat "$NOMBRE"_TEMP #DEBUG
 	
+	LINEAS=`wc -l "$NOMBRE_SIMPLE"_TEMP.txt | awk '{print $1}'`
 	for i in $(seq $LINEAS);do
 
-        LINE=`cat "$NOMBRE"_TEMP | head -n 1` #Variable que saca la primeria linea
+        LINE=`cat "$NOMBRE_SIMPLE"_TEMP.txt | head -n 1` #Variable que saca la primeria linea
         echo -e ""$FONDO_ROJO $LETRAS_BLANCAS"$LINE""$NC" | cowsay -f snowman
-        sed -i '1d' "$NOMBRE"_TEMP #Borra la primera linea
+        sed -i '1d' "$NOMBRE_SIMPLE"_TEMP.txt #Borra la primera linea
         sleep 2
         clear
 
     done
 
-    rm "$NOMBRE"_TEMP
+    rm "$NOMBRE_SIMPLE"_TEMP.txt
 
 else
 	echo "El archivo mp3 no existe"
@@ -49,24 +50,25 @@ else
 	text2wave $NOMBRE -o $NOMBRE_SIMPLE.wav
 	ffmpeg -i $NOMBRE_SIMPLE.wav $NOMBRE_SIMPLE.mp3 > /dev/null 2>&1 #Para que no salga nada por terminal
 	
-	LINEAS=`wc -l "$NOMBRE" | awk '{print $1}'`
 
-	cp "$NOMBRE" "$NOMBRE"_TEMP
-	sed -i '/^[[:space:]]*$/d' "$NOMBRE"_TEMP
+	cp "$NOMBRE" "$NOMBRE_SIMPLE"_TEMP.txt
+	sed -i '/^[[:space:]]*$/d' "$NOMBRE_SIMPLE"_TEMP.txt
 #	cat "$NOMBRE"_TEMP #DEBUG
 
+	LINEAS=`wc -l "$NOMBRE_SIMPLE"_TEMP.txt | awk '{print $1}'`
 	rm $NOMBRE_SIMPLE.wav
+
 	ffplay -autoexit $NOMBRE_SIMPLE.mp3  > /dev/null 2>&1 & #Para segundo plano
 	
 	for i in $(seq $LINEAS);do
 
-		LINE=`cat "$NOMBRE"_TEMP | head -n 1`
+		LINE=`cat "$NOMBRE_SIMPLE"_TEMP.txt | head -n 1`
 		echo -e ""$FONDO_ROJO $LETRAS_BLANCAS"$LINE""$NC" | cowsay -f snowman
-		sed -i '1d' "$NOMBRE"_TEMP
+		sed -i '1d' "$NOMBRE_SIMPLE"_TEMP.txt
 		sleep 1
 		clear
 	
 	done
 #	rm $NOMBRE_SIMPLE.mp3 #DEBUG
-	rm "$NOMBRE"_TEMP
+	rm "$NOMBRE_SIMPLE"_TEMP.txt
 fi
